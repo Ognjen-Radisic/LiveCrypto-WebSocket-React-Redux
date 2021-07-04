@@ -1,7 +1,12 @@
 import React from "react";
+import DataTable from "../components/DataTable";
 
 const Home = () => {
-	return <div></div>;
+	return (
+		<>
+			<DataTable />
+		</>
+	);
 };
 
 export default Home;

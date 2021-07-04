@@ -1,12 +1,22 @@
 import React from "react";
-import Navbar from "./components/common/Navbar";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 
 function App() {
 	return (
-		<>
+		<Router>
 			<Navbar />
-			<div className="App">HELLLO</div>;
-		</>
+			<Switch>
+				<Route path="/" exact>
+					<Home />
+				</Route>
+				<Route path="/profile">
+					<Profile />
+				</Route>
+			</Switch>
+		</Router>
 	);
 }
 
