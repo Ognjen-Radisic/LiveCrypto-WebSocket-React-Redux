@@ -1,7 +1,12 @@
 import React from "react";
+import ProfileInfo from "../components/ProfileInfo";
 
 const Profile = () => {
-	return <div>Hello Profile</div>;
+	return (
+		<>
+			<ProfileInfo />
+		</>
+	);
 };
 
 export default Profile;

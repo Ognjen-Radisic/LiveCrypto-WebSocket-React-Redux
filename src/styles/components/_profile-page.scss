@@ -1,0 +1,30 @@
+.profile-page {
+	display: flex;
+	flex-direction: column;
+	margin-top: 50px;
+	margin-left: 20%;
+
+	&__avatar {
+		width: 260px;
+		height: 260px;
+		margin-bottom: 3px;
+	}
+
+	&__name {
+		margin-bottom: 10px;
+	}
+
+	&__email {
+		color: $grey;
+		margin-bottom: 5px;
+	}
+
+	&__link {
+		color: $grey;
+		margin-bottom: 30px;
+		cursor: pointer;
+	}
+	&__btn-container {
+		width: 100px;
+	}
+}
