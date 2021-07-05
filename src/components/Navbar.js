@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { AppBar, Toolbar, Typography, Button } from "@material-ui/core";
+
+//redux
+import { useDispatch, useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -18,27 +21,34 @@ const useStyles = makeStyles((theme) => ({
 
 const Navbar = () => {
 	const classes = useStyles();
-	const [loggedIn, setLoggedIn] = useState(false);
+	const dispatch = useDispatch();
+	const loginState = useSelector((state) => state.login);
+
+	const logInFunc = () => {
+		dispatch({ type: "LOG_IN", payload: true });
+	};
 
 	return (
 		<div className={classes.root}>
 			<AppBar position="sticky">
 				<Toolbar>
 					<Typography variant="h5" className={classes.logo}>
-						Navbar
+						<Link to="/" className={classes.textLink}>
+							Navbar
+						</Link>
 					</Typography>
 
-					{/* Depending on loggedIn state, regulate flex-grow property */}
+					{/* Depending on loginState state, regulate flex-grow property */}
 					<Typography
 						variant="h6"
-						style={{ flexGrow: loggedIn ? 0 : 1, marginRight: "20px" }}>
+						style={{ flexGrow: loginState ? 0 : 1, marginRight: "20px" }}>
 						<Link to="/" className={classes.textLink}>
 							Home
 						</Link>
 					</Typography>
 
-					{/*Quasi loggin functionality, when button is clicked display Profile (Nav item) permanently */}
-					{loggedIn ? (
+					{/* "loggin functionality", when button is clicked display Profile (Nav item) permanently */}
+					{loginState ? (
 						<Typography variant="h6">
 							<Link to="/profile" className={classes.textLink}>
 								Profile
@@ -48,7 +58,7 @@ const Navbar = () => {
 						<Button
 							variant="contained"
 							color="secondary"
-							onClick={() => setLoggedIn(true)}>
+							onClick={() => logInFunc()}>
 							Login
 						</Button>
 					)}
