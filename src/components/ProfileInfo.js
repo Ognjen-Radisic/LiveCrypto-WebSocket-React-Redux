@@ -1,21 +1,22 @@
 import { Button } from "@material-ui/core";
-import React, { useState } from "react";
-import defaultImg from "../assets/laptop.jpg";
+import React, { useState, useEffect } from "react";
 
-const url = "https://picsum.photos/260/260";
+//redux
+import { useDispatch, useSelector } from "react-redux";
+import { fetchNewAvatar } from "../redux/actions/profile";
 
 const ProfileInfo = () => {
-	const [avatarImg, setAvatarImg] = useState(defaultImg);
+	const dispatch = useDispatch();
+	const profilePicture = useSelector((state) => state.profile);
+	const [avatarImg, setAvatarImg] = useState(profilePicture);
 
-	const fetchNewAvatar = async () => {
-		try {
-			const response = await fetch(url);
-			const newImage = response.url;
-			setAvatarImg(newImage);
-		} catch (error) {
-			console.log(error);
-		}
+	const generateNewPicture = () => {
+		dispatch(fetchNewAvatar());
 	};
+
+	useEffect(() => {
+		setAvatarImg(profilePicture);
+	}, [profilePicture]);
 
 	return (
 		<div className="profile-page">
@@ -33,7 +34,7 @@ const ProfileInfo = () => {
 				<Button
 					variant="contained"
 					color="primary"
-					onClick={() => fetchNewAvatar()}>
+					onClick={() => generateNewPicture()}>
 					Shuffle&nbsp;avatar
 				</Button>
 			</div>
