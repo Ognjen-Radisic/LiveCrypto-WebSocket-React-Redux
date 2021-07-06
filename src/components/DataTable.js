@@ -92,7 +92,7 @@ export default function DataTable() {
 							channelId: parsedData[0],
 							dailyChange: parsedData[1][4],
 							volume: parsedData[1][7],
-							lastPrice: parsedData[1][7],
+							lastPrice: parsedData[1][6],
 						},
 					});
 				}
@@ -116,6 +116,7 @@ export default function DataTable() {
 		//on unmount close websocket connection
 		return () => {
 			ws.close();
+			dispatch({ type: "WEBSOCKET_CLOSE", payload: {} });
 		};
 	}, []);
 

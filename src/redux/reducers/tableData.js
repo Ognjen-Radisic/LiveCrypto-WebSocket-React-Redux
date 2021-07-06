@@ -10,9 +10,9 @@ const tableData = (state = {}, action) => {
 	switch (action.type) {
 		case "WEBSOCKET_UPDATE":
 			const id = action.payload.channelId;
-			const daily = action.payload.dailyChange;
-			const vol = action.payload.volume;
-			const lastP = action.payload.lastPrice;
+			const daily = `${action.payload.dailyChange.toFixed(1)}%`;
+			const vol = action.payload.volume.toFixed(2);
+			const lastP = action.payload.lastPrice.toFixed(2);
 
 			return {
 				...state,
@@ -22,6 +22,9 @@ const tableData = (state = {}, action) => {
 					lastPrice: lastP,
 				},
 			};
+
+		case "WEBSOCKET_CLOSE":
+			return {};
 
 		default:
 			return state;
