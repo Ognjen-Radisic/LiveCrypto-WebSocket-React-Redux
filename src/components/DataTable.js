@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { withStyles, makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -7,6 +7,10 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
+//redux
+import { useDispatch, useSelector } from "react-redux";
+
+//================table styling===================//
 const StyledTableCell = withStyles((theme) => ({
 	head: {
 		backgroundColor: theme.palette.common.black,
@@ -36,23 +40,33 @@ const useStyles = makeStyles({
 	},
 });
 
+//=============================================//
+
+//table component
 export default function DataTable() {
 	const classes = useStyles();
-	const [webData, setWebData] = useState("dasd");
+	const dispatch = useDispatch();
 
-	const defaultRows = ["BTCUSD", "BTCEUR", "ETHUSD"]; //, "ETHEUR", "EOSUSD"
+	//grabing 2 redux reducer states
+	const cryptoData = useSelector((state) => state.tableData);
+	const cryptoChannelID = useSelector((state) => state.pairChannel);
+
+	//default columns and curencies that will be subscribed to websocket
+	const defaultRows = ["BTCUSD", "BTCEUR", "ETHUSD", "ETHEUR", "EOSUSD"];
 	const deafultColumns = [
 		"#",
-		"Symbol",
-		"Daily change",
-		"Volume",
-		"Last Price",
+		"Symbol", //exm "BTCUSD"
+		"Daily change", // position 4 in response array
+		"Volume", // position 7 in response array
+		"Last Price", // position 6 in response array
 	];
 
+	//on mount connect to websocket and setup event listeners
 	useEffect(() => {
 		const ws = new WebSocket("wss://api-pub.bitfinex.com/ws/2");
 
 		ws.addEventListener("open", () => {
+			//subscribe to these currency pairs
 			defaultRows.map((pair) =>
 				ws.send(
 					JSON.stringify({
@@ -64,12 +78,42 @@ export default function DataTable() {
 			);
 		});
 
+		//when we get response from server filter it and assign it to correct redux state
 		ws.addEventListener("message", (msg) => {
-			setWebData(msg.data);
-			const dataArr = JSON.parse(msg.data);
-			console.log(dataArr);
+			const parsedData = JSON.parse(msg.data);
+			//this means new data arrived for channel or just a ping to a existing channel
+			if (Array.isArray(parsedData)) {
+				//if it is not ping response, but data response continue, "hb" stands for hearthbeat
+				if (parsedData[1] !== "hb") {
+					// console.log(parsedData);
+					dispatch({
+						type: "WEBSOCKET_UPDATE",
+						payload: {
+							channelId: parsedData[0],
+							dailyChange: parsedData[1][4],
+							volume: parsedData[1][7],
+							lastPrice: parsedData[1][7],
+						},
+					});
+				}
+			}
+			//error checking
+			else if (parsedData === undefined || parsedData === null) {
+				console.log("We haave server connection problems");
+			}
+			//this means it is initial subscribe object as data response
+			else {
+				dispatch({
+					type: "WEBSOCKET_SUBSCRIBE",
+					payload: {
+						pair: parsedData.pair,
+						id: parsedData.chanId,
+					},
+				});
+			}
 		});
 
+		//on unmount close websocket connection
 		return () => {
 			ws.close();
 		};
@@ -77,7 +121,6 @@ export default function DataTable() {
 
 	return (
 		<>
-			<h2>{webData}</h2>
 			<TableContainer>
 				<Table className={classes.table} aria-label="customized table">
 					<TableHead>
@@ -92,15 +135,26 @@ export default function DataTable() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{defaultRows.map((row, index) => (
-							<StyledTableRow key={index}>
-								<StyledTableCell>{index + 1}</StyledTableCell>
-								<StyledTableCell>{row}</StyledTableCell>
-								<StyledTableCell align="left">{row}</StyledTableCell>
-								<StyledTableCell align="left">{row}</StyledTableCell>
-								<StyledTableCell align="left">{row}</StyledTableCell>
-							</StyledTableRow>
-						))}
+						{defaultRows.map((row, index) => {
+							const curId = cryptoChannelID[row];
+
+							//error checking to see is first batch of data loaded in redux state
+							if (cryptoData[curId] === undefined) return null;
+
+							return (
+								<StyledTableRow key={index}>
+									<StyledTableCell>{index + 1}</StyledTableCell>
+									<StyledTableCell>{row}</StyledTableCell>
+									<StyledTableCell>
+										{cryptoData[curId].dailyChange}
+									</StyledTableCell>
+									<StyledTableCell>{cryptoData[curId].volume}</StyledTableCell>
+									<StyledTableCell>
+										{cryptoData[curId].lastPrice}
+									</StyledTableCell>
+								</StyledTableRow>
+							);
+						})}
 					</TableBody>
 				</Table>
 			</TableContainer>
