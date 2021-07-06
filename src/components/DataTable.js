@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { withStyles, makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -11,9 +11,13 @@ const StyledTableCell = withStyles((theme) => ({
 	head: {
 		backgroundColor: theme.palette.common.black,
 		color: theme.palette.common.white,
+		fontSize: 18,
+		fontWeight: 700,
+		border: "1px solid rgba(224, 224, 224, 1)",
 	},
 	body: {
 		fontSize: 16,
+		border: "1px solid rgba(224, 224, 224, 1)",
 	},
 }))(TableCell);
 
@@ -25,18 +29,6 @@ const StyledTableRow = withStyles((theme) => ({
 	},
 }))(TableRow);
 
-function createData(num, name, calories, fat, carbs, protein) {
-	return { num, name, calories, fat, carbs, protein };
-}
-
-const rows = [
-	createData(1, "Frozen yoghurt", 159, 6.0, 24, 4.0),
-	createData(2, "Ice cream sandwich", 237, 9.0, 37, 4.3),
-	createData(3, "Eclair", 262, 16.0, 24, 6.0),
-	createData(4, "Cupcake", 305, 3.7, 67, 4.3),
-	createData(5, "Gingerbread", 356, 16.0, 49, 3.9),
-];
-
 const useStyles = makeStyles({
 	table: {
 		maxWidth: 700,
@@ -46,33 +38,72 @@ const useStyles = makeStyles({
 
 export default function DataTable() {
 	const classes = useStyles();
+	const [webData, setWebData] = useState("dasd");
+
+	const defaultRows = ["BTCUSD", "BTCEUR", "ETHUSD"]; //, "ETHEUR", "EOSUSD"
+	const deafultColumns = [
+		"#",
+		"Symbol",
+		"Daily change",
+		"Volume",
+		"Last Price",
+	];
+
+	useEffect(() => {
+		const ws = new WebSocket("wss://api-pub.bitfinex.com/ws/2");
+
+		ws.addEventListener("open", () => {
+			defaultRows.map((pair) =>
+				ws.send(
+					JSON.stringify({
+						event: "subscribe",
+						channel: "ticker",
+						symbol: pair,
+					})
+				)
+			);
+		});
+
+		ws.addEventListener("message", (msg) => {
+			setWebData(msg.data);
+			const dataArr = JSON.parse(msg.data);
+			console.log(dataArr);
+		});
+
+		return () => {
+			ws.close();
+		};
+	}, []);
 
 	return (
-		<TableContainer>
-			<Table className={classes.table} aria-label="customized table">
-				<TableHead>
-					<TableRow>
-						<StyledTableCell>#</StyledTableCell>
-						<StyledTableCell>Dessert (100g serving)</StyledTableCell>
-						<StyledTableCell align="right">Calories</StyledTableCell>
-						<StyledTableCell align="right">Fat&nbsp;(g)</StyledTableCell>
-						<StyledTableCell align="right">Carbs&nbsp;(g)</StyledTableCell>
-						<StyledTableCell align="right">Protein&nbsp;(g)</StyledTableCell>
-					</TableRow>
-				</TableHead>
-				<TableBody>
-					{rows.map((row) => (
-						<StyledTableRow key={row.num}>
-							<StyledTableCell>{row.num}</StyledTableCell>
-							<StyledTableCell>{row.name}</StyledTableCell>
-							<StyledTableCell align="right">{row.calories}</StyledTableCell>
-							<StyledTableCell align="right">{row.fat}</StyledTableCell>
-							<StyledTableCell align="right">{row.carbs}</StyledTableCell>
-							<StyledTableCell align="right">{row.protein}</StyledTableCell>
-						</StyledTableRow>
-					))}
-				</TableBody>
-			</Table>
-		</TableContainer>
+		<>
+			<h2>{webData}</h2>
+			<TableContainer>
+				<Table className={classes.table} aria-label="customized table">
+					<TableHead>
+						<TableRow>
+							{deafultColumns.map((item, index) => {
+								return (
+									<StyledTableCell key={index} align="left">
+										{item}
+									</StyledTableCell>
+								);
+							})}
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{defaultRows.map((row, index) => (
+							<StyledTableRow key={index}>
+								<StyledTableCell>{index + 1}</StyledTableCell>
+								<StyledTableCell>{row}</StyledTableCell>
+								<StyledTableCell align="left">{row}</StyledTableCell>
+								<StyledTableCell align="left">{row}</StyledTableCell>
+								<StyledTableCell align="left">{row}</StyledTableCell>
+							</StyledTableRow>
+						))}
+					</TableBody>
+				</Table>
+			</TableContainer>
+		</>
 	);
 }
