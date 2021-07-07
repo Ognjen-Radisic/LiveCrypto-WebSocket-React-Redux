@@ -6,6 +6,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import ChangingColorCell from "./ChangingColorCell";
 
 //redux
 import { useDispatch, useSelector } from "react-redux";
@@ -146,13 +147,18 @@ export default function DataTable() {
 								<StyledTableRow key={index}>
 									<StyledTableCell>{index + 1}</StyledTableCell>
 									<StyledTableCell>{row}</StyledTableCell>
-									<StyledTableCell>
-										{cryptoData[curId].dailyChange}
-									</StyledTableCell>
-									<StyledTableCell>{cryptoData[curId].volume}</StyledTableCell>
-									<StyledTableCell>
-										{cryptoData[curId].lastPrice}
-									</StyledTableCell>
+									<ChangingColorCell
+										field={cryptoData[curId].dailyChange}
+										fixedValue="daily"
+									/>
+									<ChangingColorCell
+										field={cryptoData[curId].volume}
+										fixedValue="common"
+									/>
+									<ChangingColorCell
+										field={cryptoData[curId].lastPrice}
+										fixedValue="common"
+									/>
 								</StyledTableRow>
 							);
 						})}
